@@ -4,14 +4,17 @@ class MovieDataOrganizer
 		@mov_pop_ar_hs = []
 		@user_ratings = []
 		@movie_viewers = Hash.new{|h,k| h[k]=[]}
-		@data_array
+		@data_array =[]
 		@path = args[0]
 		@data_pair = args[1]
+		if @path.nil?
+			@path = 'C:\Users\Pomata\Documents\cosci\cosci 236\pa2\ml-100k\u.data'
+		end
 	end
 
 	# file must end at last rating
 	def load_data
-		@data_array = IO.readlines('C:\Users\Pomata\Documents\cosci\cosci 236\u.txt')
+		@data_array = IO.readlines(@path)
 		ratings_array=[]
 		# ya this is gonna be an array of hashes
 		# with array index as movie id and hash with kew of rank and value of count 
@@ -48,6 +51,10 @@ class MovieDataOrganizer
 		end
 	end
 
+	def get_data(n)
+		if n.nil?; return @data_array; else; return data_array.first(n); end
+	end
+	
 	# creates user array with hashes for movie id to that users rating
 	def user_rate (user_ratings_arr, line)
 		if user_ratings_arr[line[0]].nil? 
@@ -60,10 +67,10 @@ class MovieDataOrganizer
 	def popularity(movie_id)
 		if @mov_pop_ar_hs[movie_id].nil?
 			puts "#{movie_id} is an invalid movie"
-			return 0
+			return 0.0
 		else
 			temp_hash = @mov_pop_ar_hs[movie_id]
-			sum = 0
+			sum = 0.0
 			count = 0
 			# ratings are integers so I can multiply them despite being keys
 			temp_hash.each do |rating, num|
@@ -125,7 +132,11 @@ class MovieDataOrganizer
 				# and needs to be removed to get a # below #movies both seen)
 				# divide by total number of movies seen to get a percentage of similarity of ranks
 				# +0.0 TO TURN INTO DECIMALS *100 TO GET THE PERCENT
-				return ((0.0+both_seen.length)/(num_total_movies))*(((0.0+sum)/4)/both_seen.length)*100
+				n =((0.0+both_seen.length)/(num_total_movies))*(((0.0+sum)/4)/both_seen.length)*100
+				if n.nan?
+					n = 0.0
+				end
+				return n
 			else
 				return 0
 			end
@@ -139,7 +150,7 @@ class MovieDataOrganizer
 		else
 			if !@user_ratings[u].nil?
 				@user_ratings.each do |u2|
-					if u != @user_ratings.index(u2) && !u2.nil?
+					if u != @user_ratings.index(u2) && !u2.nil? 
 						sim_hash[@user_ratings.index(u2)] = similarity(u, @user_ratings.index(u2))
 					end
 				end
